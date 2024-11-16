@@ -97,7 +97,7 @@ const companyId = PARAMS.get("会社レコード番号");
         const empGiven = tr_elem.querySelector(
           '[data-field-code="労働者名"]'
         ).textContent;
-        console.log("Analysis of ", empNo, empFamily, empGiven);
+        // console.log("Analysis of ", empNo, empFamily, empGiven);
         if (employeeId !== "") {
           if (empNo === employeeId) {
             const kv_text_action = tr_elem.getElementsByTagName("button");

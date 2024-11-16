@@ -1,3 +1,7 @@
+// const LOCATED_URL = new URL(window.location.href);
+// const PARAMS = LOCATED_URL.searchParams; //渡したパラメータを取得
+// const companyId = PARAMS.get("会社レコード番号");
+
 //ボタン作成
 class Button {
   constructor(ledgerNames) {
@@ -198,25 +202,27 @@ class ChangeValue {
       displayValue
     ) {
       let tablefield_name = replace_data.get(cer_name)["table_field"];
-      let table = tablefield_name[0].replace(/^\{%|\%}$/g, "");
-      let table_content = displayValue[table].value;
+      let table = tablefield_name.map((name) => name.replace(/^\{%|\%}$/g, ""));
+      let table_content = displayValue[table[i]].value;
       let pp = 0;
-      for (let jj = 0; jj < tablefield_name.length - 1; jj++) {
-        if (tablefield_name[jj] == tablefield_name[jj + 1]) {
-          pp += 1;
-        } else {
-          pp = 0;
+      for (let jj = i + 1; jj < tablefield_name.length - 1; jj++) {
+        if (table[jj] !== "") {
+          if (table[jj] == table[jj + 1]) {
+            pp += 1;
+          } else {
+            pp = 0;
+          }
         }
         if (table_content[pp]) {
-          let name = tablefield_name[jj + 1].replace(/^\{%|\%}$/g, "");
-          value[i + jj + 1] = table_content[pp].value[name].value;
+          let name = table[jj];
+          value[jj] = table_content[pp].value[name].value;
         } else {
-          value[i + jj + 1] = "";
+          value[jj] = "";
         }
       }
       return value;
     },
-    個別関数1: function original_function1(
+    個別関数2: function original_function2(
       i,
       value,
       replace_data,
@@ -232,7 +238,6 @@ class ChangeValue {
         エ: { index: 4, value1: "４", value2: "④", value3: "エ" },
         オ: { index: 5, value1: "５", value2: "⑤", value3: "オ" },
         カ: { index: 6, value1: "６", value2: "⑥", value3: "カ" },
-        キ: { index: 7, value1: "７", value2: "⑦", value3: "キ" },
       };
 
       const alphabet = displayValue[tablefield_name[i]].value;
@@ -240,10 +245,36 @@ class ChangeValue {
         if (alphabet == key) {
           value[i + mapping[key].index] = mapping[key].value2;
           index = mapping[key].index;
+          value[i + 7] = mapping[key].index;
         } else {
           value[i + mapping[key].index] = mapping[key].value1;
         }
       }
+
+      return value;
+    },
+    個別関数3: function original_function3(
+      i,
+      value,
+      replace_data,
+      cer_name,
+      displayValue
+    ) {
+      let tablefield_name = replace_data.get(cer_name)["table_field"];
+      let index = value[i];
+      let reasons = displayValue[tablefield_name[i]].value;
+      if (reasons.length < 35) {
+        value[i + 2 + (index - 1) * 3] = reasons;
+      } else if (reasons.length < 53) {
+        value[i + 1 + (index - 1) * 3] = reasons.substring(0, 10);
+        value[i + 2 + (index - 1) * 3] = reasons.substring(11, reasons.length);
+      } else {
+        value[i + 1 + (index - 1) * 3] = reasons.substring(0, 10);
+        value[i + 2 + (index - 1) * 3] = reasons.substring(11, 53);
+        value[i + 3 + (index - 1) * 3] = reasons.substring(54, reasons.length);
+      }
+
+      value[i] = "";
 
       return value;
     },
@@ -469,7 +500,7 @@ function hideLoadingScreen() {
   kviewer.events.on("record.show", function (state) {
     document.getElementById("__next").style.display = "none";
     let displayValue = state.record.kintoneRecord;
-    let ledgerNames = ["退職証明書"];
+    let ledgerNames = ["労働者名簿"];
     const button = new Button(ledgerNames);
 
     const relay = new Relay(
@@ -514,7 +545,7 @@ function hideLoadingScreen() {
         const maxCount = 30;
         const interval = 100;
         const intervalId = setInterval(() => {
-          let pButton = document.getElementById("退職証明書");
+          let pButton = document.getElementById("労働者名簿");
           if (pButton) {
             pButton.click();
             clearInterval(intervalId); // ボタンがクリックできたらループを終了
